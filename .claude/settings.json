@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install git+https://github.com/github/spec-kit.git)",
+      "Bash(pip3 install git+https://github.com/github/spec-kit.git)",
+      "Bash(python3 -m venv .venv)",
+      "Bash(source .venv/bin/activate)",
+      "Bash(pip install --upgrade pip)",
+      "Bash(python3.12 --version)",
+      "Bash(python3.11 --version)",
+      "Bash(rm -rf .venv)",
+      "Bash(python3.12 -m venv .venv)",
+      "Bash(specify init --here --ai claude)",
+      "Bash(yes)"
+    ]
+  }
+}
