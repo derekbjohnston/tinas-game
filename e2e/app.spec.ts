@@ -33,6 +33,17 @@ test.describe('Create Game flow', () => {
 
     // Should transition to lobby — look for room code display or lobby elements
     await expect(page.getByText(/Room:/i).or(page.getByText(/word/i))).toBeVisible({ timeout: 10_000 });
+
+    // Cleanup: remove the test room from Firebase
+    await page.waitForFunction(() => (window as any).__e2e, { timeout: 5_000 });
+    await page.evaluate(async () => {
+      const { db, ref, remove } = (window as any).__e2e;
+      const code = localStorage.getItem('roomCode');
+      if (code) {
+        await remove(ref(db, `rooms/${code}`));
+        localStorage.removeItem('roomCode');
+      }
+    });
   });
 });
 
