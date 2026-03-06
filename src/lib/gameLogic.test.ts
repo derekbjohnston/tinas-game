@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { drawRandomWord, buildMarkGotItUpdates, buildBowlEmptyUpdates, buildPlayAgainUpdates } from './gameLogic';
+import { deduplicateWords, drawRandomWord, buildMarkGotItUpdates, buildBowlEmptyUpdates, buildPlayAgainUpdates } from './gameLogic';
 import type { Room, BowlWord, Turn } from '../types/game';
 
 function makeBowl(words: Record<string, { text: string; inBowl: boolean }>): Record<string, BowlWord> {
@@ -44,6 +44,46 @@ function makeRoom(overrides: Partial<Room> = {}): Room {
     ...overrides,
   };
 }
+
+describe('deduplicateWords', () => {
+  it('removes duplicates within the submission (case-insensitive)', () => {
+    const result = deduplicateWords(['Cat', 'cat', 'DOG', 'dog'], null);
+    expect(result).toEqual(['Cat', 'DOG']);
+  });
+
+  it('removes words that already exist in the bowl (case-insensitive)', () => {
+    const bowl = makeBowl({
+      w1: { text: 'elephant', inBowl: true },
+      w2: { text: 'Tiger', inBowl: true },
+    });
+    const result = deduplicateWords(['Elephant', 'banana', 'tiger'], bowl);
+    expect(result).toEqual(['banana']);
+  });
+
+  it('returns all words when there are no duplicates', () => {
+    const result = deduplicateWords(['cat', 'dog', 'fish'], null);
+    expect(result).toEqual(['cat', 'dog', 'fish']);
+  });
+
+  it('handles empty input', () => {
+    expect(deduplicateWords([], null)).toEqual([]);
+  });
+
+  it('handles empty bowl', () => {
+    const result = deduplicateWords(['cat'], {});
+    expect(result).toEqual(['cat']);
+  });
+
+  it('trims whitespace before comparing', () => {
+    const result = deduplicateWords(['  cat  ', 'cat'], null);
+    expect(result).toEqual(['cat']);
+  });
+
+  it('filters out empty/whitespace-only entries', () => {
+    const result = deduplicateWords(['cat', '', '  ', 'dog'], null);
+    expect(result).toEqual(['cat', 'dog']);
+  });
+});
 
 describe('drawRandomWord', () => {
   it('returns a word id that is in the bowl', () => {

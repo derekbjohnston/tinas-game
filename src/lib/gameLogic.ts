@@ -1,5 +1,25 @@
 import type { BowlWord, Room, RoundType } from '../types/game';
 
+export function deduplicateWords(
+  words: string[],
+  existingBowl: Record<string, BowlWord> | null
+): string[] {
+  const existingTexts = new Set(
+    existingBowl ? Object.values(existingBowl).map((w) => w.text.toLowerCase().trim()) : []
+  );
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const text of words) {
+    const key = text.trim().toLowerCase();
+    if (key === '' || existingTexts.has(key) || seen.has(key)) continue;
+    seen.add(key);
+    result.push(text.trim());
+  }
+
+  return result;
+}
+
 export function drawRandomWord(bowl: Record<string, BowlWord>, excludeId?: string): string | null {
   const available = Object.entries(bowl).filter(
     ([id, w]) => w.inBowl && id !== excludeId

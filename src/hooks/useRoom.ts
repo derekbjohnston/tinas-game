@@ -12,7 +12,7 @@ import {
 import { db } from '../lib/firebase';
 import { createUniqueRoomCode } from '../lib/roomCode';
 import { generateTurnOrder, getNextPlayerIndex } from '../lib/turnOrder';
-import { drawRandomWord, buildBowlEmptyUpdates, buildPlayAgainUpdates } from '../lib/gameLogic';
+import { drawRandomWord, deduplicateWords, buildBowlEmptyUpdates, buildPlayAgainUpdates } from '../lib/gameLogic';
 import type { Room, Player, BowlWord } from '../types/game';
 
 function getPlayerId(): string {
@@ -97,12 +97,16 @@ export async function submitWords(
   roomCode: string,
   words: string[]
 ): Promise<void> {
+  const bowlSnap = await get(ref(db, `rooms/${roomCode}/bowl`));
+  const existingBowl = bowlSnap.val() as Record<string, BowlWord> | null;
+  const unique = deduplicateWords(words, existingBowl);
+
   const updates: Record<string, BowlWord | boolean> = {};
 
-  for (const text of words) {
+  for (const text of unique) {
     const wordId = push(ref(db, `rooms/${roomCode}/bowl`)).key!;
     updates[`rooms/${roomCode}/bowl/${wordId}`] = {
-      text: text.trim(),
+      text,
       submittedBy: playerId,
       inBowl: true,
     };
